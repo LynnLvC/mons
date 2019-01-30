@@ -53,12 +53,12 @@ void SrsSimpleBuffer::erase(int size)
     if (size <= 0) {
         return;
     }
-    
+
     if (size >= length()) {
         data.clear();
         return;
     }
-    
+
     data.erase(data.begin(), data.begin() + size);
 }
 
