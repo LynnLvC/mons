@@ -37,21 +37,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <srs_auto_headers.hpp>
 
 // provider info.
-#define RTMP_SIG_SRS_KEY "SRS"
-#define RTMP_SIG_SRS_CODE "ZhouGuowen"
-#define RTMP_SIG_SRS_AUTHROS "winlin,wenjie.zhao"
+#define RTMP_SIG_SRS_KEY "MONS"
+#define RTMP_SIG_SRS_CODE "***"
+#define RTMP_SIG_SRS_AUTHROS "*****"
 // contact info.
-#define RTMP_SIG_SRS_WEB "http://ossrs.net"
-#define RTMP_SIG_SRS_EMAIL "winlin@vip.126.com"
+#define RTMP_SIG_SRS_WEB "http://www.baidu.com"
+#define RTMP_SIG_SRS_EMAIL "**@**.com"
 // debug info.
 #define RTMP_SIG_SRS_ROLE "cluster"
 #define RTMP_SIG_SRS_NAME RTMP_SIG_SRS_KEY"(Simple RTMP Server)"
-#define RTMP_SIG_SRS_URL_SHORT "github.com/ossrs/srs"
+#define RTMP_SIG_SRS_URL_SHORT "***/**"
 #define RTMP_SIG_SRS_URL "https://"RTMP_SIG_SRS_URL_SHORT
 #define RTMP_SIG_SRS_LICENSE "The MIT License (MIT)"
-#define RTMP_SIG_SRS_COPYRIGHT "Copyright (c) 2013-2015 SRS(ossrs)"
+#define RTMP_SIG_SRS_COPYRIGHT "Copyright (c) 2013-2019"
 #define RTMP_SIG_SRS_PRIMARY RTMP_SIG_SRS_KEY"/"VERSION_STABLE_BRANCH
-#define RTMP_SIG_SRS_CONTRIBUTORS_URL RTMP_SIG_SRS_URL"/blob/master/AUTHORS.txt"
+#define RTMP_SIG_SRS_CONTRIBUTORS_URL RTMP_SIG_SRS_URL"***"
 #define RTMP_SIG_SRS_HANDSHAKE RTMP_SIG_SRS_KEY"("RTMP_SIG_SRS_VERSION")"
 #define RTMP_SIG_SRS_RELEASE RTMP_SIG_SRS_URL"/tree/"VERSION_STABLE_BRANCH".0release"
 #define RTMP_SIG_SRS_ISSUES(id) RTMP_SIG_SRS_URL"/issues/"#id

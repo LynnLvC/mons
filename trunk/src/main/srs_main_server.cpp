@@ -149,9 +149,9 @@ void show_macro_features()
 #endif
 
 #ifdef SRS_PERF_MERGED_READ
-    srs_trace("MR(merged-read): on, @see %s", RTMP_SIG_SRS_ISSUES(241));
+    srs_trace("MR(merged-read): on");
 #else
-    srs_warn("MR(merged-read): off, @see %s", RTMP_SIG_SRS_ISSUES(241));
+    srs_warn("MR(merged-read): off");
 #endif
 
     srs_trace("MR(merged-read) default %d sleep %d", SRS_PERF_MR_ENABLED, SRS_PERF_MR_SLEEP);
@@ -189,36 +189,36 @@ void check_macro_features()
 {
     // important preset.
 #ifdef SRS_OSX
-    srs_trace("SRS for OSX");
+    srs_trace(" for OSX");
 #endif
 #ifdef SRS_PI
-    srs_trace("SRS for pi");
+    srs_trace(" for pi");
 #endif
 #ifdef SRS_CUBIE
-    srs_trace("SRS for cubieboard");
+    srs_trace(" for cubieboard");
 #endif
 #ifdef SRS_ARM_UBUNTU12
-    srs_trace("SRS for arm(build on ubuntu)");
+    srs_trace(" for arm(build on ubuntu)");
 #endif
 #ifdef SRS_MIPS_UBUNTU12
-    srs_trace("SRS for mips(build on ubuntu)");
+    srs_trace(" for mips(build on ubuntu)");
 #endif
     
     // for special features.
 #ifndef SRS_PERF_MERGED_READ
-    srs_warn("MR(merged-read) is disabled, hurts read performance. @see %s", RTMP_SIG_SRS_ISSUES(241));
+    srs_warn("MR(merged-read) is disabled, hurts read performance. ");
 #endif
 
     srs_trace("writev limits write %d iovs a time", sysconf(_SC_IOV_MAX));
 
 #if VERSION_MAJOR > VERSION_STABLE
     #warning "current branch is not stable, please use stable branch instead."
-    srs_warn("SRS %s is not stable, please use stable branch %s instead", RTMP_SIG_SRS_VERSION, VERSION_STABLE_BRANCH);
+ //   srs_warn("SRS %s is not stable, please use stable branch %s instead", RTMP_SIG_SRS_VERSION, VERSION_STABLE_BRANCH);
 #endif
     
 #ifdef SRS_AUTO_MEM_WATCH
-    #warning "srs memory watcher will hurts performance. user should kill by SIGTERM or init.d script."
-    srs_warn("srs memory watcher will hurts performance. user should kill by SIGTERM or init.d script.");
+    #warning " memory watcher will hurts performance. user should kill by SIGTERM or init.d script."
+    srs_warn(" memory watcher will hurts performance. user should kill by SIGTERM or init.d script.");
 #endif
 
 #if defined(SRS_AUTO_STREAM_CASTER)
@@ -305,14 +305,14 @@ int main(int argc, char** argv)
     }
     
     srs_trace(RTMP_SIG_SRS_SERVER", stable is "RTMP_SIG_SRS_PRIMARY);
-    srs_trace("license: "RTMP_SIG_SRS_LICENSE", "RTMP_SIG_SRS_COPYRIGHT);
-    srs_trace("primary/master: "RTMP_SIG_SRS_PRIMARY);
-    srs_trace("authors: "RTMP_SIG_SRS_AUTHROS);
-    srs_trace("contributors: "SRS_AUTO_CONSTRIBUTORS);
+//    srs_trace("license: "RTMP_SIG_SRS_LICENSE", "RTMP_SIG_SRS_COPYRIGHT);
+//    srs_trace("primary/master: "RTMP_SIG_SRS_PRIMARY);
+//    srs_trace("authors: "RTMP_SIG_SRS_AUTHROS);
+//    srs_trace("contributors: "SRS_AUTO_CONSTRIBUTORS);
     srs_trace("uname: "SRS_AUTO_UNAME);
-    srs_trace("build: %s, %s", SRS_AUTO_BUILD_DATE, srs_is_little_endian()? "little-endian":"big-endian");
-    srs_trace("configure: "SRS_AUTO_USER_CONFIGURE);
-    srs_trace("features: "SRS_AUTO_CONFIGURE);
+//    srs_trace("build: %s, %s", SRS_AUTO_BUILD_DATE, srs_is_little_endian()? "little-endian":"big-endian");
+//    srs_trace("configure: "SRS_AUTO_USER_CONFIGURE);
+ //   srs_trace("features: "SRS_AUTO_CONFIGURE);
 #ifdef SRS_AUTO_ARM_UBUNTU12
     srs_trace("arm tool chain: "SRS_AUTO_EMBEDED_TOOL_CHAIN);
 #endif

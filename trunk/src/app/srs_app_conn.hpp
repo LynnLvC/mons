@@ -104,6 +104,7 @@ public:
     /**
     * start the client green thread.
     * when server get a client from listener, 
+    * when server get a client from listener,
     * 1. server will create an concrete connection(for instance, RTMP connection),
     * 2. then add connection to its connection manager,
     * 3. start the client thread by invoke this start()
@@ -121,7 +122,7 @@ public:
     virtual int cycle();
     /**
     * when the thread cycle finished, thread will invoke the on_thread_stop(),
-    * which will remove self from server, server will remove the connection from manager 
+    * which will remove self from server, server will remove the connection from manager
     * then delete the connection.
     */
     virtual void on_thread_stop();

@@ -61,16 +61,16 @@ const char* _srs_version = "XCORE-"RTMP_SIG_SRS_SERVER;
 ///////////////////////////////////////////////////////////
 // default consts values
 ///////////////////////////////////////////////////////////
-#define SRS_CONF_DEFAULT_PID_FILE "./objs/srs.pid"
-#define SRS_CONF_DEFAULT_LOG_FILE "./objs/srs.log"
+#define SRS_CONF_DEFAULT_PID_FILE "./mons.pid"
+#define SRS_CONF_DEFAULT_LOG_FILE "./mons.log"
 #define SRS_CONF_DEFAULT_LOG_LEVEL "trace"
 #define SRS_CONF_DEFAULT_LOG_TANK_CONSOLE "console"
-#define SRS_CONF_DEFAULT_COFNIG_FILE "conf/srs.conf"
+#define SRS_CONF_DEFAULT_COFNIG_FILE "conf/mons.conf"
 #define SRS_CONF_DEFAULT_FF_LOG_DIR "./objs"
 #define SRS_CONF_DEFAULT_UTC_TIME false
 
 #define SRS_CONF_DEFAULT_MAX_CONNECTIONS 1000
-#define SRS_CONF_DEFAULT_HLS_PATH "./objs/nginx/html"
+#define SRS_CONF_DEFAULT_HLS_PATH "./objs/html"
 #define SRS_CONF_DEFAULT_HLS_M3U8_FILE "[app]/[stream].m3u8"
 #define SRS_CONF_DEFAULT_HLS_TS_FILE "[app]/[stream]-[seq].ts"
 #define SRS_CONF_DEFAULT_HLS_TS_FLOOR false
@@ -87,7 +87,7 @@ const char* _srs_version = "XCORE-"RTMP_SIG_SRS_SERVER;
 #define SRS_CONF_DEFAULT_HLS_CLEANUP true
 #define SRS_CONF_DEFAULT_HLS_WAIT_KEYFRAME true
 #define SRS_CONF_DEFAULT_HLS_NB_NOTIFY 64
-#define SRS_CONF_DEFAULT_DVR_PATH "./objs/nginx/html/[app]/[stream].[timestamp].flv"
+#define SRS_CONF_DEFAULT_DVR_PATH "./html/[app]/[stream].[timestamp].flv"
 #define SRS_CONF_DEFAULT_DVR_PLAN_SESSION "session"
 #define SRS_CONF_DEFAULT_DVR_PLAN_SEGMENT "segment"
 #define SRS_CONF_DEFAULT_DVR_PLAN_APPEND "append"
@@ -138,7 +138,7 @@ const char* _srs_version = "XCORE-"RTMP_SIG_SRS_SERVER;
 #define SRS_CONF_DEFAULT_EDGE_TRANSFORM_VHOST "[vhost]"
 
 // hds default value
-#define SRS_CONF_DEFAULT_HDS_PATH       "./objs/nginx/html"
+#define SRS_CONF_DEFAULT_HDS_PATH       "./html"
 #define SRS_CONF_DEFAULT_HDS_WINDOW     (60)
 #define SRS_CONF_DEFAULT_HDS_FRAGMENT   (10)
 
@@ -934,7 +934,7 @@ int SrsConfig::reload_conf(SrsConfig* conf)
                 return ret;
             }
         }
-        srs_trace("reload srs_log_tank success.");
+        srs_trace("reload _log_tank success.");
     }
     
     // merge config: srs_log_level
@@ -942,11 +942,11 @@ int SrsConfig::reload_conf(SrsConfig* conf)
         for (it = subscribes.begin(); it != subscribes.end(); ++it) {
             ISrsReloadHandler* subscribe = *it;
             if ((ret = subscribe->on_reload_log_level()) != ERROR_SUCCESS) {
-                srs_error("notify subscribes reload srs_log_level failed. ret=%d", ret);
+                srs_error("notify subscribes reload _log_level failed. ret=%d", ret);
                 return ret;
             }
         }
-        srs_trace("reload srs_log_level success.");
+        srs_trace("reload _log_level success.");
     }
     
     // merge config: srs_log_file
@@ -954,11 +954,11 @@ int SrsConfig::reload_conf(SrsConfig* conf)
         for (it = subscribes.begin(); it != subscribes.end(); ++it) {
             ISrsReloadHandler* subscribe = *it;
             if ((ret = subscribe->on_reload_log_file()) != ERROR_SUCCESS) {
-                srs_error("notify subscribes reload srs_log_file failed. ret=%d", ret);
+                srs_error("notify subscribes reload _log_file failed. ret=%d", ret);
                 return ret;
             }
         }
-        srs_trace("reload srs_log_file success.");
+        srs_trace("reload _log_file success.");
     }
     
     // merge config: utc_time
@@ -1393,9 +1393,9 @@ int SrsConfig::parse_options(int argc, char** argv)
             return ret;
         }
         if (get_log_tank_file()) {
-            srs_trace("write log to file %s", log_filename.c_str());
-            srs_trace("you can: tailf %s", log_filename.c_str());
-            srs_trace("@see: %s", SRS_WIKI_URL_LOG);
+   //         srs_trace("write log to file %s", log_filename.c_str());
+   //         srs_trace("you can: tailf %s", log_filename.c_str());
+  //          srs_trace("@see: %s", SRS_WIKI_URL_LOG);
         } else {
             srs_trace("write log to console");
         }
@@ -1500,11 +1500,6 @@ void SrsConfig::print_help(char** argv)
 {
     printf(
         RTMP_SIG_SRS_SERVER" "RTMP_SIG_SRS_COPYRIGHT"\n"
-        "License: "RTMP_SIG_SRS_LICENSE"\n"
-        "Primary: "RTMP_SIG_SRS_PRIMARY"\n"
-        "Authors: "RTMP_SIG_SRS_AUTHROS"\n"
-        "Build: "SRS_AUTO_BUILD_DATE" Configuration:"SRS_AUTO_USER_CONFIGURE"\n"
-        "Features:"SRS_AUTO_CONFIGURE"\n""\n"
         "Usage: %s [-h?vV] [[-t] -c <filename>]\n" 
         "\n"
         "Options:\n"
@@ -1515,10 +1510,6 @@ void SrsConfig::print_help(char** argv)
         "For srs-dolphin:\n"
         "   -p  rtmp-port       : the rtmp port to listen.\n"
         "   -x  http-port       : the http port to listen.\n"
-        "\n"
-        RTMP_SIG_SRS_WEB"\n"
-        RTMP_SIG_SRS_URL"\n"
-        "Email: "RTMP_SIG_SRS_EMAIL"\n"
         "\n"
         "For example:\n"
         "   %s -v\n"
