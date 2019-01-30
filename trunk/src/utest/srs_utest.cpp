@@ -55,7 +55,7 @@ void srs_bytes_print(char* pa, int size)
 }
 
 // basic test and samples.
-VOID TEST(SampleTest, FastSampleInt64Test) 
+VOID TEST(SampleTest, FastSampleInt64Test)
 {
     EXPECT_EQ(1, (int)sizeof(int8_t));
     EXPECT_EQ(2, (int)sizeof(int16_t));
@@ -63,11 +63,11 @@ VOID TEST(SampleTest, FastSampleInt64Test)
     EXPECT_EQ(8, (int)sizeof(int64_t));
 }
 
-VOID TEST(SampleTest, FastSampleMacrosTest) 
+VOID TEST(SampleTest, FastSampleMacrosTest)
 {
     EXPECT_TRUE(1);
     EXPECT_FALSE(0);
-    
+
     EXPECT_EQ(1, 1); // ==
     EXPECT_NE(1, 2); // !=
     EXPECT_LE(1, 2); // <=
@@ -79,7 +79,7 @@ VOID TEST(SampleTest, FastSampleMacrosTest)
     EXPECT_STRNE("winlin", "srs");
     EXPECT_STRCASEEQ("winlin", "Winlin");
     EXPECT_STRCASENE("winlin", "srs");
-    
+
     EXPECT_FLOAT_EQ(1.0, 1.000000000000001);
     EXPECT_DOUBLE_EQ(1.0, 1.0000000000000001);
     EXPECT_NEAR(10, 15, 5);

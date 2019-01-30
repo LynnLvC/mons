@@ -1,18 +1,18 @@
 /*
  The MIT License (MIT)
- 
+
  Copyright (c) 2013-2015 SRS(ossrs)
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  the Software, and to permit persons to whom the Software is furnished to do so,
  subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -84,14 +84,14 @@ string srs_generate_http_status_text(int status)
         _status_map[SRS_CONSTS_HTTP_GatewayTimeout                 ] = SRS_CONSTS_HTTP_GatewayTimeout_str               ;
         _status_map[SRS_CONSTS_HTTP_HTTPVersionNotSupported        ] = SRS_CONSTS_HTTP_HTTPVersionNotSupported_str      ;
     }
-    
+
     std::string status_text;
     if (_status_map.find(status) == _status_map.end()) {
         status_text = "Status Unknown";
     } else {
         status_text = _status_map[status];
     }
-    
+
     return status_text;
 }
 
@@ -104,7 +104,7 @@ bool srs_go_http_body_allowd(int status)
     } else if (status == 204 || status == 304) {
         return false;
     }
-    
+
     return true;
 }
 
@@ -130,12 +130,12 @@ int srs_go_http_error(ISrsHttpResponseWriter* w, int code)
 int srs_go_http_error(ISrsHttpResponseWriter* w, int code, string error)
 {
     int ret = ERROR_SUCCESS;
-    
+
     w->header()->set_content_type("text/plain; charset=utf-8");
     w->header()->set_content_length(error.length());
     w->write_header(code);
     w->write((char*)error.data(), (int)error.length());
-    
+
     return ret;
 }
 
@@ -155,22 +155,22 @@ void SrsHttpHeader::set(string key, string value)
 string SrsHttpHeader::get(string key)
 {
     std::string v;
-    
+
     if (headers.find(key) != headers.end()) {
         v = headers[key];
     }
-    
+
     return v;
 }
 
 int64_t SrsHttpHeader::content_length()
 {
     std::string cl = get("Content-Length");
-    
+
     if (cl.empty()) {
         return -1;
     }
-    
+
     return (int64_t)::atof(cl.c_str());
 }
 
@@ -242,12 +242,12 @@ SrsHttpRedirectHandler::~SrsHttpRedirectHandler()
 int SrsHttpRedirectHandler::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 {
     int ret = ERROR_SUCCESS;
-    
+
     string location = url;
     if (!r->query().empty()) {
         location += "?" + r->query();
     }
-    
+
     string msg = "Redirect to" + location;
 
     w->header()->set_content_type("text/plain; charset=utf-8");
@@ -292,14 +292,14 @@ SrsHttpFileServer::~SrsHttpFileServer()
 int SrsHttpFileServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 {
     string upath = r->path();
-    
+
     // add default pages.
     if (srs_string_ends_with(upath, "/")) {
         upath += SRS_HTTP_DEFAULT_PAGE;
     }
-    
+
     string fullpath = dir + "/";
-    
+
     // remove the virtual directory.
     srs_assert(entry);
     size_t pos = entry->pattern.find("/");
@@ -308,7 +308,7 @@ int SrsHttpFileServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
     } else {
         fullpath += upath;
     }
-    
+
     // stat current dir, if exists, return error.
     if (!srs_path_exists(fullpath)) {
         srs_warn("http miss file=%s, pattern=%s, upath=%s",
@@ -317,7 +317,7 @@ int SrsHttpFileServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
     }
     srs_trace("http match file=%s, pattern=%s, upath=%s",
               fullpath.c_str(), entry->pattern.c_str(), upath.c_str());
-    
+
     // handle file according to its extension.
     // use vod stream for .flv/.fhv
     if (srs_string_ends_with(fullpath, ".flv") || srs_string_ends_with(fullpath, ".fhv")) {
@@ -325,7 +325,7 @@ int SrsHttpFileServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
     } else if (srs_string_ends_with(fullpath, ".mp4")) {
         return serve_mp4_file(w, r, fullpath);
     }
-    
+
     // serve common static file.
     return serve_file(w, r, fullpath);
 }
@@ -333,20 +333,20 @@ int SrsHttpFileServer::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 int SrsHttpFileServer::serve_file(ISrsHttpResponseWriter* w, ISrsHttpMessage* r, string fullpath)
 {
     int ret = ERROR_SUCCESS;
-    
+
     // open the target file.
     SrsFileReader fs;
-    
+
     if ((ret = fs.open(fullpath)) != ERROR_SUCCESS) {
         srs_warn("open file %s failed, ret=%d", fullpath.c_str(), ret);
         return ret;
     }
-    
+
     int64_t length = fs.filesize();
-    
+
     // unset the content length to encode in chunked encoding.
     w->header()->set_content_length(length);
-    
+
     static std::map<std::string, std::string> _mime;
     if (_mime.empty()) {
         _mime[".ts"] = "video/MP2T";
@@ -377,21 +377,21 @@ int SrsHttpFileServer::serve_file(ISrsHttpResponseWriter* w, ISrsHttpMessage* r,
         _mime[".jpg"] = "image/jpeg";
         _mime[".gif"] = "image/gif";
     }
-    
+
     if (true) {
         size_t pos;
         std::string ext = fullpath;
         if ((pos = ext.rfind(".")) != string::npos) {
             ext = ext.substr(pos);
         }
-        
+
         if (_mime.find(ext) == _mime.end()) {
             w->header()->set_content_type("application/octet-stream");
         } else {
             w->header()->set_content_type(_mime[ext]);
         }
     }
-    
+
     // write body.
     int64_t left = length;
     if ((ret = copy(w, &fs, r, (int)left)) != ERROR_SUCCESS) {
@@ -400,7 +400,7 @@ int SrsHttpFileServer::serve_file(ISrsHttpResponseWriter* w, ISrsHttpMessage* r,
         }
         return ret;
     }
-    
+
     return w->final_request();
 }
 
@@ -410,12 +410,12 @@ int SrsHttpFileServer::serve_flv_file(ISrsHttpResponseWriter* w, ISrsHttpMessage
     if (start.empty()) {
         return serve_file(w, r, fullpath);
     }
-    
+
     int offset = ::atoi(start.c_str());
     if (offset <= 0) {
         return serve_file(w, r, fullpath);
     }
-    
+
     return serve_flv_stream(w, r, fullpath, offset);
 }
 
@@ -429,30 +429,30 @@ int SrsHttpFileServer::serve_mp4_file(ISrsHttpResponseWriter* w, ISrsHttpMessage
     if (range.empty()) {
         range = r->query_get("bytes");
     }
-    
+
     // rollback to serve whole file.
     size_t pos = string::npos;
     if (range.empty() || (pos = range.find("-")) == string::npos) {
         return serve_file(w, r, fullpath);
     }
-    
+
     // parse the start in query string
     int start = 0;
     if (pos > 0) {
         start = ::atoi(range.substr(0, pos).c_str());
     }
-    
+
     // parse end in query string.
     int end = -1;
     if (pos < range.length() - 1) {
         end = ::atoi(range.substr(pos + 1).c_str());
     }
-    
+
     // invalid param, serve as whole mp4 file.
     if (start < 0 || (end != -1 && start > end)) {
         return serve_file(w, r, fullpath);
     }
-    
+
     return serve_mp4_stream(w, r, fullpath, start, end);
 }
 
@@ -469,23 +469,23 @@ int SrsHttpFileServer::serve_mp4_stream(ISrsHttpResponseWriter* w, ISrsHttpMessa
 int SrsHttpFileServer::copy(ISrsHttpResponseWriter* w, SrsFileReader* fs, ISrsHttpMessage* r, int size)
 {
     int ret = ERROR_SUCCESS;
-    
+
     int left = size;
     char* buf = r->http_ts_send_buffer();
-    
+
     while (left > 0) {
         ssize_t nread = -1;
         int max_read = srs_min(left, SRS_HTTP_TS_SEND_BUFFER_SIZE);
         if ((ret = fs->read(buf, max_read, &nread)) != ERROR_SUCCESS) {
             break;
         }
-        
+
         left -= nread;
         if ((ret = w->write(buf, (int)nread)) != ERROR_SUCCESS) {
             break;
         }
     }
-    
+
     return ret;
 }
 
@@ -529,7 +529,7 @@ SrsHttpServeMux::~SrsHttpServeMux()
         srs_freep(entry);
     }
     entries.clear();
-    
+
     vhosts.clear();
     hijackers.clear();
 }
@@ -562,15 +562,15 @@ void SrsHttpServeMux::unhijack(ISrsHttpMatchHijacker* h)
 int SrsHttpServeMux::handle(std::string pattern, ISrsHttpHandler* handler)
 {
     int ret = ERROR_SUCCESS;
-    
+
     srs_assert(handler);
-    
+
     if (pattern.empty()) {
         ret = ERROR_HTTP_PATTERN_EMPTY;
         srs_error("http: empty pattern. ret=%d", ret);
         return ret;
     }
-    
+
     if (entries.find(pattern) != entries.end()) {
         SrsHttpMuxEntry* exists = entries[pattern];
         if (exists->explicit_match) {
@@ -579,7 +579,7 @@ int SrsHttpServeMux::handle(std::string pattern, ISrsHttpHandler* handler)
             return ret;
         }
     }
-    
+
     std::string vhost = pattern;
     if (pattern.at(0) != '/') {
         if (pattern.find("/") != string::npos) {
@@ -587,28 +587,28 @@ int SrsHttpServeMux::handle(std::string pattern, ISrsHttpHandler* handler)
         }
         vhosts[vhost] = handler;
     }
-    
+
     if (true) {
         SrsHttpMuxEntry* entry = new SrsHttpMuxEntry();
         entry->explicit_match = true;
         entry->handler = handler;
         entry->pattern = pattern;
         entry->handler->entry = entry;
-        
+
         if (entries.find(pattern) != entries.end()) {
             SrsHttpMuxEntry* exists = entries[pattern];
             srs_freep(exists);
         }
         entries[pattern] = entry;
     }
-    
+
     // Helpful behavior:
     // If pattern is /tree/, insert an implicit permanent redirect for /tree.
     // It can be overridden by an explicit registration.
     if (pattern != "/" && !pattern.empty() && pattern.at(pattern.length() - 1) == '/') {
         std::string rpattern = pattern.substr(0, pattern.length() - 1);
         SrsHttpMuxEntry* entry = NULL;
-        
+
         // free the exists not explicit entry
         if (entries.find(rpattern) != entries.end()) {
             SrsHttpMuxEntry* exists = entries[rpattern];
@@ -616,33 +616,33 @@ int SrsHttpServeMux::handle(std::string pattern, ISrsHttpHandler* handler)
                 entry = exists;
             }
         }
-        
+
         // create implicit redirect.
         if (!entry || entry->explicit_match) {
             srs_freep(entry);
-            
+
             entry = new SrsHttpMuxEntry();
             entry->explicit_match = false;
             entry->handler = new SrsHttpRedirectHandler(pattern, SRS_CONSTS_HTTP_Found);
             entry->pattern = pattern;
             entry->handler->entry = entry;
-            
+
             entries[rpattern] = entry;
         }
     }
-    
+
     return ret;
 }
 
 bool SrsHttpServeMux::can_serve(ISrsHttpMessage* r)
 {
     int ret = ERROR_SUCCESS;
-    
+
     ISrsHttpHandler* h = NULL;
     if ((ret = find_handler(r, &h)) != ERROR_SUCCESS) {
         return false;
     }
-    
+
     srs_assert(h);
     return !h->is_not_found();
 }
@@ -650,13 +650,13 @@ bool SrsHttpServeMux::can_serve(ISrsHttpMessage* r)
 int SrsHttpServeMux::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
 {
     int ret = ERROR_SUCCESS;
-    
+
     ISrsHttpHandler* h = NULL;
     if ((ret = find_handler(r, &h)) != ERROR_SUCCESS) {
         srs_error("find handler failed. ret=%d", ret);
         return ret;
     }
-    
+
     srs_assert(h);
     if ((ret = h->serve_http(w, r)) != ERROR_SUCCESS) {
         if (!srs_is_client_gracefully_close(ret)) {
@@ -664,26 +664,26 @@ int SrsHttpServeMux::serve_http(ISrsHttpResponseWriter* w, ISrsHttpMessage* r)
         }
         return ret;
     }
-    
+
     return ret;
 }
 
 int SrsHttpServeMux::find_handler(ISrsHttpMessage* r, ISrsHttpHandler** ph)
 {
     int ret = ERROR_SUCCESS;
-    
+
     // TODO: FIXME: support the path . and ..
     if (r->url().find("..") != std::string::npos) {
         ret = ERROR_HTTP_URL_NOT_CLEAN;
         srs_error("htt url not canonical, url=%s. ret=%d", r->url().c_str(), ret);
         return ret;
     }
-    
+
     if ((ret = match(r, ph)) != ERROR_SUCCESS) {
         srs_error("http match handler failed. ret=%d", ret);
         return ret;
     }
-    
+
     // always hijack.
     if (!hijackers.empty()) {
         // notice all hijacker the match failed.
@@ -696,50 +696,50 @@ int SrsHttpServeMux::find_handler(ISrsHttpMessage* r, ISrsHttpHandler** ph)
             }
         }
     }
-    
+
     static ISrsHttpHandler* h404 = new SrsHttpNotFoundHandler();
     if (*ph == NULL) {
         *ph = h404;
     }
-    
+
     return ret;
 }
 
 int SrsHttpServeMux::match(ISrsHttpMessage* r, ISrsHttpHandler** ph)
 {
     int ret = ERROR_SUCCESS;
-    
+
     std::string path = r->path();
-    
+
     // Host-specific pattern takes precedence over generic ones
     if (!vhosts.empty() && vhosts.find(r->host()) != vhosts.end()) {
         path = r->host() + path;
     }
-    
+
     int nb_matched = 0;
     ISrsHttpHandler* h = NULL;
-    
+
     std::map<std::string, SrsHttpMuxEntry*>::iterator it;
     for (it = entries.begin(); it != entries.end(); ++it) {
         std::string pattern = it->first;
         SrsHttpMuxEntry* entry = it->second;
-        
+
         if (!entry->enabled) {
             continue;
         }
-        
+
         if (!path_match(pattern, path)) {
             continue;
         }
-        
+
         if (!h || (int)pattern.length() > nb_matched) {
             nb_matched = (int)pattern.length();
             h = entry->handler;
         }
     }
-    
+
     *ph = h;
-    
+
     return ret;
 }
 
@@ -748,14 +748,14 @@ bool SrsHttpServeMux::path_match(string pattern, string path)
     if (pattern.empty()) {
         return false;
     }
-    
+
     int n = (int)pattern.length();
-    
+
     // not endswith '/', exactly match.
     if (pattern.at(n - 1) != '/') {
         return pattern == path;
     }
-    
+
     // endswith '/', match any,
     // for example, '/api/' match '/api/[N]'
     if ((int)path.length() >= n) {
@@ -763,7 +763,7 @@ bool SrsHttpServeMux::path_match(string pattern, string path)
             return true;
         }
     }
-    
+
     return false;
 }
 

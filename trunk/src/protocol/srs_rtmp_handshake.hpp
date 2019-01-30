@@ -48,7 +48,7 @@ namespace _srs_internal
     extern u_int8_t SrsGenuineFPKey[];
     int openssl_HMACsha256(const void* key, int key_size, const void* data, int data_size, void* digest);
     int openssl_generate_key(char* public_key, int32_t size);
-    
+
     /**
     * the DH wrapper.
     */
@@ -93,23 +93,23 @@ namespace _srs_internal
     /**
     * the schema type.
     */
-    enum srs_schema_type 
+    enum srs_schema_type
     {
         srs_schema_invalid = 2,
-        
+
         /**
         * key-digest sequence
         */
         srs_schema0 = 0,
-        
+
         /**
         * digest-key sequence
         * @remark, FMS requires the schema1(digest-key), or connect failed.
         */
-        // 
+        //
         srs_schema1 = 1,
     };
-    
+
     /**
     * 764bytes key structure
     *     random-data: (offset)bytes
@@ -124,14 +124,14 @@ namespace _srs_internal
         // (offset)bytes
         char* random0;
         int random0_size;
-        
+
         // 128bytes
         char key[128];
-        
+
         // (764-offset-128-4)bytes
         char* random1;
         int random1_size;
-        
+
         // 4bytes
         int32_t offset;
     public:
@@ -147,7 +147,7 @@ namespace _srs_internal
         // the key->offset cannot be used as the offset of key.
         int calc_valid_offset();
     };
-    
+
     /**
     * 764bytes digest structure
     *     offset: 4bytes
@@ -161,14 +161,14 @@ namespace _srs_internal
     public:
         // 4bytes
         int32_t offset;
-        
+
         // (offset)bytes
         char* random0;
         int random0_size;
-        
+
         // 32bytes
         char digest[32];
-        
+
         // (764-4-offset-32)bytes
         char* random1;
         int random1_size;
@@ -185,9 +185,9 @@ namespace _srs_internal
         // the key->offset cannot be used as the offset of digest.
         int calc_valid_offset();
     };
-    
+
     class c1s1;
-    
+
     /**
     * the c1s1 strategy, use schema0 or schema1.
     * the template method class to defines common behaviors,
@@ -249,19 +249,19 @@ namespace _srs_internal
         * server: create and sign the s1 from c1.
         *       // decode c1 try schema0 then schema1
         *       c1-digest-data = get-c1-digest-data(schema0)
-        *       if c1-digest-data equals to calc_c1_digest(c1, schema0) {  
-        *           c1-key-data = get-c1-key-data(schema0)  
+        *       if c1-digest-data equals to calc_c1_digest(c1, schema0) {
+        *           c1-key-data = get-c1-key-data(schema0)
         *           schema = schema0
-        *       } else {  
-        *           c1-digest-data = get-c1-digest-data(schema1)  
+        *       } else {
+        *           c1-digest-data = get-c1-digest-data(schema1)
         *           if c1-digest-data not equals to calc_c1_digest(c1, schema1) {
-        *               switch to simple handshake.  
-        *               return  
+        *               switch to simple handshake.
+        *               return
         *           }
-        *           c1-key-data = get-c1-key-data(schema1)  
+        *           c1-key-data = get-c1-key-data(schema1)
         *           schema = schema1
         *       }
-        * 
+        *
         *       // generate s1
         *       random fill 1536bytes s1
         *       time = time() // c1[0-3]
@@ -304,7 +304,7 @@ namespace _srs_internal
         */
         virtual void copy_digest(SrsStream* stream, bool with_digest);
     };
-    
+
     /**
     * c1s1 schema0
     *     key: 764bytes
@@ -321,7 +321,7 @@ namespace _srs_internal
     public:
         virtual int copy_to(c1s1* owner, char* bytes, int size, bool with_digest);
     };
-    
+
     /**
     * c1s1 schema1
     *     digest: 764bytes
@@ -416,19 +416,19 @@ namespace _srs_internal
         * server: create and sign the s1 from c1.
         *       // decode c1 try schema0 then schema1
         *       c1-digest-data = get-c1-digest-data(schema0)
-        *       if c1-digest-data equals to calc_c1_digest(c1, schema0) {  
-        *           c1-key-data = get-c1-key-data(schema0)  
+        *       if c1-digest-data equals to calc_c1_digest(c1, schema0) {
+        *           c1-key-data = get-c1-key-data(schema0)
         *           schema = schema0
-        *       } else {  
-        *           c1-digest-data = get-c1-digest-data(schema1)  
+        *       } else {
+        *           c1-digest-data = get-c1-digest-data(schema1)
         *           if c1-digest-data not equals to calc_c1_digest(c1, schema1) {
-        *               switch to simple handshake.  
-        *               return  
+        *               switch to simple handshake.
+        *               return
         *           }
-        *           c1-key-data = get-c1-key-data(schema1)  
+        *           c1-key-data = get-c1-key-data(schema1)
         *           schema = schema1
         *       }
-        * 
+        *
         *       // generate s1
         *       random fill 1536bytes s1
         *       time = time() // c1[0-3]
@@ -444,7 +444,7 @@ namespace _srs_internal
         */
         virtual int s1_validate_digest(bool& is_valid);
     };
-    
+
     /**
     * the c2s2 complex handshake structure.
     * random-data: 1504bytes
@@ -474,13 +474,13 @@ namespace _srs_internal
         /**
         * create c2.
         * random fill c2s2 1536 bytes
-        * 
+        *
         * // client generate C2, or server valid C2
         * temp-key = HMACsha256(s1-digest, FPKey, 62)
         * c2-digest-data = HMACsha256(c2-random-data, temp-key, 32)
         */
         virtual int c2_create(c1s1* s1);
-        
+
         /**
         * validate the c2 from client.
         */
@@ -489,13 +489,13 @@ namespace _srs_internal
         /**
         * create s2.
         * random fill c2s2 1536 bytes
-        * 
+        *
         * // server generate S2, or client valid S2
         * temp-key = HMACsha256(c1-digest, FMSKey, 68)
         * s2-digest-data = HMACsha256(s2-random-data, temp-key, 32)
         */
         virtual int s2_create(c1s1* c1);
-        
+
         /**
         * validate the s2 from server.
         */
@@ -507,7 +507,7 @@ namespace _srs_internal
 
 /**
 * simple handshake.
-* user can try complex handshake first, 
+* user can try complex handshake first,
 * rollback to simple handshake if error ERROR_RTMP_TRY_SIMPLE_HS
 */
 class SrsSimpleHandshake
