@@ -130,13 +130,13 @@ SrsMpegtsOverUdp::SrsMpegtsOverUdp(SrsConfDirective* c)
     context = new SrsTsContext();
     buffer = new SrsSimpleBuffer();
     output = _srs_config->get_stream_caster_output(c);
-    
+
     req = NULL;
     io = NULL;
     client = NULL;
     stfd = NULL;
     stream_id = 0;
-    
+
     avc = new SrsRawH264Stream();
     aac = new SrsRawAacStream();
     h264_sps_changed = false;
@@ -169,7 +169,7 @@ int SrsMpegtsOverUdp::on_udp_packet(sockaddr_in* from, char* buf, int nb_buf)
 
     srs_info("udp: got %s:%d packet %d/%d bytes",
         peer_ip.c_str(), peer_port, nb_buf, buffer->length());
-        
+
     return on_udp_bytes(peer_ip, peer_port, buf, nb_buf);
 }
 
@@ -260,7 +260,7 @@ int SrsMpegtsOverUdp::on_ts_message(SrsTsMessage* msg)
     // about the bytes of msg, specified by elementary stream which indicates by PES_packet_data_byte and stream_id
     // for example, when SrsTsStream of SrsTsChannel indicates stream_type is SrsTsStreamVideoMpeg4 and SrsTsStreamAudioMpeg4,
     // the elementary stream can be mux in "2.11 Carriage of ISO/IEC 14496 data" in hls-mpeg-ts-iso13818-1.pdf, page 103
-    // @remark, the most popular stream_id is 0xe0 for h.264 over mpegts, which indicates the stream_id is video and 
+    // @remark, the most popular stream_id is 0xe0 for h.264 over mpegts, which indicates the stream_id is video and
     //      stream_number is 0, where I guess the elementary is specified in annexb format(H.264-AVC-ISO_IEC_14496-10.pdf, page 211).
     //      because when audio stream_number is 0, the elementary is ADTS(aac-mp4a-format-ISO_IEC_14496-3+2001.pdf, page 75, 1.A.2.2 ADTS).
 
@@ -272,7 +272,7 @@ int SrsMpegtsOverUdp::on_ts_message(SrsTsMessage* msg)
     // PES_packet_data_bytes, N, is specified by the PES_packet_length field. N shall be equal to the value indicated in the
     // PES_packet_length minus the number of bytes between the last byte of the PES_packet_length field and the first
     // PES_packet_data_byte.
-    // 
+    //
     // In the case of a private_stream_1, private_stream_2, ECM_stream, or EMM_stream, the contents of the
     // PES_packet_data_byte field are user definable and will not be specified by ITU-T | ISO/IEC in the future.
 
@@ -283,12 +283,12 @@ int SrsMpegtsOverUdp::on_ts_message(SrsTsMessage* msg)
     // Program Specific Information as specified in 2.4.4.
 
     // about the stream_id table, define in Table 2-18 "C Stream_id assignments, hls-mpeg-ts-iso13818-1.pdf, page 52.
-    // 
+    //
     // 110x xxxx
     // ISO/IEC 13818-3 or ISO/IEC 11172-3 or ISO/IEC 13818-7 or ISO/IEC
     // 14496-3 audio stream number x xxxx
     // ((sid >> 5) & 0x07) == SrsTsPESStreamIdAudio
-    // 
+    //
     // 1110 xxxx
     // ITU-T Rec. H.262 | ISO/IEC 13818-2 or ISO/IEC 11172-2 or ISO/IEC
     // 14496-2 video stream number xxxx
@@ -300,7 +300,7 @@ int SrsMpegtsOverUdp::on_ts_message(SrsTsMessage* msg)
             msg->dts, msg->pts, msg->payload->length(), msg->packet->payload_unit_start_indicator, msg->continuity_counter, msg->sid,
             msg->is_audio()? "A":msg->is_video()? "V":"N", msg->stream_number());
     }
-    
+
     // When the audio SID is private stream 1, we use common audio.
     // @see https://github.com/ossrs/srs/issues/740
     if (msg->channel->apply == SrsTsPidApplyAudio && msg->sid == SrsTsPESStreamIdPrivateStream1) {
@@ -310,7 +310,7 @@ int SrsMpegtsOverUdp::on_ts_message(SrsTsMessage* msg)
     // when not audio/video, or not adts/annexb format, donot support.
     if (msg->stream_number() != 0) {
         ret = ERROR_STREAM_CASTER_TS_ES;
-        srs_error("mpegts: unsupported stream format, sid=%#x(%s-%d). ret=%d", 
+        srs_error("mpegts: unsupported stream format, sid=%#x(%s-%d). ret=%d",
             msg->sid, msg->is_audio()? "A":msg->is_video()? "V":"N", msg->stream_number(), ret);
         return ret;
     }
@@ -351,9 +351,9 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
     }
 
     // ts tbn to flv tbn.
-    u_int32_t dts = msg->dts / 90; 
+    u_int32_t dts = msg->dts / 90;
     u_int32_t pts = msg->dts / 90;
-    
+
     // send each frame.
     while (!avs->empty()) {
         char* frame = NULL;
@@ -361,12 +361,12 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
         if ((ret = avc->annexb_demux(avs, &frame, &frame_size)) != ERROR_SUCCESS) {
             return ret;
         }
-        
+
         // 5bits, 7.3.1 NAL unit syntax,
         // H.264-AVC-ISO_IEC_14496-10.pdf, page 44.
         //  7: SPS, 8: PPS, 5: I Frame, 1: P Frame
         SrsAvcNaluType nal_unit_type = (SrsAvcNaluType)(frame[0] & 0x1f);
-        
+
         // ignore the nalu type sps(7), pps(8), aud(9)
         if (nal_unit_type == SrsAvcNaluTypeAccessUnitDelimiter) {
             continue;
@@ -378,13 +378,13 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
             if ((ret = avc->sps_demux(frame, frame_size, sps)) != ERROR_SUCCESS) {
                 return ret;
             }
-        
+
             if (h264_sps == sps) {
                 continue;
             }
             h264_sps_changed = true;
             h264_sps = sps;
-        
+
             if ((ret = write_h264_sps_pps(dts, pts)) != ERROR_SUCCESS) {
                 return ret;
             }
@@ -397,19 +397,19 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
             if ((ret = avc->pps_demux(frame, frame_size, pps)) != ERROR_SUCCESS) {
                 return ret;
             }
-        
+
             if (h264_pps == pps) {
                 continue;
             }
             h264_pps_changed = true;
             h264_pps = pps;
-        
+
             if ((ret = write_h264_sps_pps(dts, pts)) != ERROR_SUCCESS) {
                 return ret;
             }
             continue;
         }
-        
+
         // ibp frame.
         // TODO: FIXME: we should group all frames to a rtmp/flv message from one ts message.
         srs_info("mpegts: demux avc ibp frame size=%d, dts=%d", frame_size, dts);
@@ -417,14 +417,14 @@ int SrsMpegtsOverUdp::on_ts_video(SrsTsMessage* msg, SrsStream* avs)
             return ret;
         }
     }
-    
+
     return ret;
 }
 
 int SrsMpegtsOverUdp::write_h264_sps_pps(u_int32_t dts, u_int32_t pts)
 {
     int ret = ERROR_SUCCESS;
-    
+
     // TODO: FIMXE: there exists bug, see following comments.
     // when sps or pps changed, update the sequence header,
     // for the pps maybe not changed while sps changed.
@@ -432,13 +432,13 @@ int SrsMpegtsOverUdp::write_h264_sps_pps(u_int32_t dts, u_int32_t pts)
     if (!h264_sps_changed || !h264_pps_changed) {
         return ret;
     }
-    
+
     // h264 raw to h264 packet.
     std::string sh;
     if ((ret = avc->mux_sequence_header(h264_sps, h264_pps, dts, pts, sh)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     // h264 packet to flv packet.
     int8_t frame_type = SrsCodecVideoAVCFrameKeyFrame;
     int8_t avc_packet_type = SrsCodecVideoAVCTypeSequenceHeader;
@@ -447,13 +447,13 @@ int SrsMpegtsOverUdp::write_h264_sps_pps(u_int32_t dts, u_int32_t pts)
     if ((ret = avc->mux_avc2flv(sh, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     // the timestamp in rtmp message header is dts.
     u_int32_t timestamp = dts;
     if ((ret = rtmp_write_packet(SrsCodecFlvTagVideo, timestamp, flv, nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     // reset sps and pps.
     h264_sps_changed = false;
     h264_pps_changed = false;
@@ -462,21 +462,21 @@ int SrsMpegtsOverUdp::write_h264_sps_pps(u_int32_t dts, u_int32_t pts)
     return ret;
 }
 
-int SrsMpegtsOverUdp::write_h264_ipb_frame(char* frame, int frame_size, u_int32_t dts, u_int32_t pts) 
+int SrsMpegtsOverUdp::write_h264_ipb_frame(char* frame, int frame_size, u_int32_t dts, u_int32_t pts)
 {
     int ret = ERROR_SUCCESS;
-    
+
     // when sps or pps not sent, ignore the packet.
     // @see https://github.com/ossrs/srs/issues/203
     if (!h264_sps_pps_sent) {
         return ERROR_H264_DROP_BEFORE_SPS_PPS;
     }
-    
+
     // 5bits, 7.3.1 NAL unit syntax,
     // H.264-AVC-ISO_IEC_14496-10.pdf, page 44.
     //  7: SPS, 8: PPS, 5: I Frame, 1: P Frame
     SrsAvcNaluType nal_unit_type = (SrsAvcNaluType)(frame[0] & 0x1f);
-    
+
     // for IDR frame, the frame is keyframe.
     SrsCodecVideoAVCFrame frame_type = SrsCodecVideoAVCFrameInterFrame;
     if (nal_unit_type == SrsAvcNaluTypeIDR) {
@@ -487,14 +487,14 @@ int SrsMpegtsOverUdp::write_h264_ipb_frame(char* frame, int frame_size, u_int32_
     if ((ret = avc->mux_ipb_frame(frame, frame_size, ibp)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     int8_t avc_packet_type = SrsCodecVideoAVCTypeNALU;
     char* flv = NULL;
     int nb_flv = 0;
     if ((ret = avc->mux_avc2flv(ibp, frame_type, avc_packet_type, dts, pts, &flv, &nb_flv)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     // the timestamp in rtmp message header is dts.
     u_int32_t timestamp = dts;
     return rtmp_write_packet(SrsCodecFlvTagVideo, timestamp, flv, nb_flv);
@@ -511,7 +511,7 @@ int SrsMpegtsOverUdp::on_ts_audio(SrsTsMessage* msg, SrsStream* avs)
 
     // ts tbn to flv tbn.
     u_int32_t dts = msg->dts / 90;
-    
+
     // send each frame.
     while (!avs->empty()) {
         char* frame = NULL;
@@ -520,7 +520,7 @@ int SrsMpegtsOverUdp::on_ts_audio(SrsTsMessage* msg, SrsStream* avs)
         if ((ret = aac->adts_demux(avs, &frame, &frame_size, codec)) != ERROR_SUCCESS) {
             return ret;
         }
-    
+
         // ignore invalid frame,
         //  * atleast 1bytes for aac to decode the data.
         if (frame_size <= 0) {
@@ -562,14 +562,14 @@ int SrsMpegtsOverUdp::write_audio_raw_frame(char* frame, int frame_size, SrsRawA
     if ((ret = aac->mux_aac2flv(frame, frame_size, codec, dts, &data, &size)) != ERROR_SUCCESS) {
         return ret;
     }
-    
+
     return rtmp_write_packet(SrsCodecFlvTagAudio, dts, data, size);
 }
 
 int SrsMpegtsOverUdp::rtmp_write_packet(char type, u_int32_t timestamp, char* data, int size)
 {
     int ret = ERROR_SUCCESS;
-    
+
     SrsSharedPtrMessage* msg = NULL;
 
     if ((ret = srs_rtmp_create_msg(type, timestamp, data, size, stream_id, &msg)) != ERROR_SUCCESS) {
@@ -594,13 +594,13 @@ int SrsMpegtsOverUdp::rtmp_write_packet(char type, u_int32_t timestamp, char* da
             srs_trace("mpegts: send msg %s age=%d, dts=%"PRId64", size=%d",
                 msg->is_audio()? "A":msg->is_video()? "V":"N", pprint->age(), msg->timestamp, msg->size);
         }
-    
+
         // send out encoded msg.
         if ((ret = client->send_and_free_message(msg, stream_id)) != ERROR_SUCCESS) {
             return ret;
         }
     }
-    
+
     return ret;
 }
 
@@ -613,7 +613,7 @@ int SrsMpegtsOverUdp::connect()
     if (io || client) {
         return ret;
     }
-    
+
     // parse uri
     if (!req) {
         req = new SrsRequest();
@@ -626,8 +626,8 @@ int SrsMpegtsOverUdp::connect()
             req->stream = uri.substr(pos + 1);
             req->tcUrl = uri = uri.substr(0, pos);
         }
-    
-        srs_discovery_tc_url(req->tcUrl, 
+
+        srs_discovery_tc_url(req->tcUrl,
             req->schema, req->host, req->vhost, req->app, req->stream, req->port,
             req->param);
     }
@@ -642,7 +642,7 @@ int SrsMpegtsOverUdp::connect()
 
     client->set_recv_timeout(SRS_CONSTS_RTMP_RECV_TIMEOUT_US);
     client->set_send_timeout(SRS_CONSTS_RTMP_SEND_TIMEOUT_US);
-    
+
     // connect to vhost/app
     if ((ret = client->handshake()) != ERROR_SUCCESS) {
         srs_error("mpegts: handshake with server failed. ret=%d", ret);
@@ -656,10 +656,10 @@ int SrsMpegtsOverUdp::connect()
         srs_error("mpegts: connect with server failed, stream_id=%d. ret=%d", stream_id, ret);
         return ret;
     }
-    
+
     // publish.
     if ((ret = client->publish(req->stream, stream_id)) != ERROR_SUCCESS) {
-        srs_error("mpegts: publish failed, stream=%s, stream_id=%d. ret=%d", 
+        srs_error("mpegts: publish failed, stream=%s, stream_id=%d. ret=%d",
             req->stream.c_str(), stream_id, ret);
         return ret;
     }
@@ -671,12 +671,12 @@ int SrsMpegtsOverUdp::connect()
 int SrsMpegtsOverUdp::connect_app(string ep_server, string ep_port)
 {
     int ret = ERROR_SUCCESS;
-    
+
     // args of request takes the srs info.
     if (req->args == NULL) {
         req->args = SrsAmf0Any::object();
     }
-    
+
     // notify server the edge identity,
     // @see https://github.com/ossrs/srs/issues/147
     SrsAmf0Object* data = req->args;
@@ -694,27 +694,27 @@ int SrsMpegtsOverUdp::connect_app(string ep_server, string ep_port)
     // for edge to directly get the id of client.
     data->set("srs_pid", SrsAmf0Any::number(getpid()));
     data->set("srs_id", SrsAmf0Any::number(_srs_context->get_id()));
-    
+
     // local ip of edge
     std::vector<std::string> ips = srs_get_local_ipv4_ips();
     assert(_srs_config->get_stats_network() < (int)ips.size());
     std::string local_ip = ips[_srs_config->get_stats_network()];
     data->set("srs_server_ip", SrsAmf0Any::str(local_ip.c_str()));
-    
+
     // generate the tcUrl
     std::string param = "";
     std::string tc_url = srs_generate_tc_url(ep_server, req->vhost, req->app, ep_port, param);
-    
+
     // upnode server identity will show in the connect_app of client.
     // @see https://github.com/ossrs/srs/issues/160
     // the debug_srs_upnode is config in vhost and default to true.
     bool debug_srs_upnode = _srs_config->get_debug_srs_upnode(req->vhost);
     if ((ret = client->connect_app(req->app, tc_url, req, debug_srs_upnode)) != ERROR_SUCCESS) {
-        srs_error("mpegts: connect with server failed, tcUrl=%s, dsu=%d. ret=%d", 
+        srs_error("mpegts: connect with server failed, tcUrl=%s, dsu=%d. ret=%d",
             tc_url.c_str(), debug_srs_upnode, ret);
         return ret;
     }
-    
+
     return ret;
 }
 
