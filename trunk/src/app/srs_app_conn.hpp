@@ -103,7 +103,6 @@ public:
     virtual void dispose();
     /**
     * start the client green thread.
-    * when server get a client from listener, 
     * when server get a client from listener,
     * 1. server will create an concrete connection(for instance, RTMP connection),
     * 2. then add connection to its connection manager,
